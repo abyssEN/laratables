@@ -2,6 +2,8 @@
 
 namespace Freshbitsweb\Laratables;
 
+use Illuminate\Support\Str;
+
 class RecordsTransformer
 {
     /**
@@ -80,7 +82,7 @@ class RecordsTransformer
         }
 
         if ($methodName = $this->customisesColumnValue($columnName)) {
-            return $record->$methodName();
+            return $this->class::$methodName($record);
         }
 
         if (isRelationColumn($columnName)) {
@@ -103,7 +105,7 @@ class RecordsTransformer
      */
     protected function customisesColumnValue($columnName)
     {
-        $methodName = camel_case('laratables_'.$columnName);
+        $methodName = Str::camel('laratables_'.$columnName);
 
         if (method_exists($this->class, $methodName)) {
             return $methodName;
@@ -125,7 +127,7 @@ class RecordsTransformer
         [$relationName, $relationColumnName] = getRelationDetails($columnName);
 
         if ($methodName = $this->customisesColumnValue($relationName.'_'.$relationColumnName)) {
-            return $record->$methodName();
+            return $this->class::$methodName($record);
         }
 
         if ($record->$relationName) {
@@ -166,11 +168,11 @@ class RecordsTransformer
         ];
 
         if (method_exists($this->class, 'laratablesRowClass')) {
-            $datatableParameters['DT_RowClass'] = $record->laratablesRowClass();
+            $datatableParameters['DT_RowClass'] = $this->class::laratablesRowClass($record);
         }
 
         if (method_exists($this->class, 'laratablesRowData')) {
-            $datatableParameters['DT_RowData'] = $record->laratablesRowData();
+            $datatableParameters['DT_RowData'] = $this->class::laratablesRowData($record);
         }
 
         return $datatableParameters;
